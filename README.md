@@ -1,21 +1,21 @@
-# 🚨 Real-Time Threat Detection for Low-Light Intelligent Surveillance
+# Real-Time Threat Detection for Low-Light Intelligent Surveillance
 
 An advanced Computer Vision and Deep Learning system designed to detect anomalies and potential threats in video surveillance footage, particularly optimized for low-light environments.
 
-## 🌟 Key Features
+## Key Features
 
 * **Hybrid Model Architecture**: Combines **YOLOv8** for precise object detection and spatial frame analysis with a custom **LSTM** network for temporal sequence processing and identifying behavioral anomalies over time.
 * **Low-Light Capability**: Engineered for robust detection even in poorly lit environments, ensuring effective 24/7 security monitoring.
 * **Interactive Web Dashboard**: A clean, responsive interface built with Flask to easily upload surveillance videos and receive instant, intuitive threat analysis.
 * **Performance Analytics**: Contains detailed metric evaluations (Accuracy, Precision, Recall, F1-Score) integrated directly into the web application to validate detection reliability.
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 * **Languages:** Python, JavaScript, HTML5, CSS3
 * **AI / Deep Learning:** PyTorch, YOLOv8 (Ultralytics), OpenCV
 * **Backend Framework:** Flask
 
-## 📁 Project Structure
+## Project Structure
 
 ```text
 ├── app.py                     # Main Flask Application & Routing
@@ -29,7 +29,7 @@ An advanced Computer Vision and Deep Learning system designed to detect anomalie
 └── uploads/                   # Video Ingestion Directory
 ```
 
-## 🚀 Setup and Installation
+## Setup and Installation
 
 1. **Clone the repository:**
    ```bash
