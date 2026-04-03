@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AIVIS v4.0 // REAL TIME CRIME SURVEILLANCE</title>
+  <meta name="description" content="Multi-Feed Surveillance Analytics Terminal"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0" />
+  <style>
+    /* ── Premium Blue & White Theme (matches dashboard.html) ── */
+    :root {
+      --bg:        #f0f4f8;
+      --bg2:       #ffffff;
+      --card:      #ffffff;
+      --card2:     #f8fafc;
+      --border:    #e2e8f0;
+      --accent:    #2563eb;
+      --accent-mute: rgba(37, 99, 235, 0.1);
+      --green:     #10b981;
+      --amber:     #f59e0b;
+      --red:       #ef4444;
+      --purple:    #8b5cf6;
+      --txt:       #0f172a;
+      --txt2:      #475569;
+      --txt3:      #64748b;
+      --mono:      'JetBrains Mono', monospace;
+      --sans:      'Inter', sans-serif;
+      --radius-sm: 8px;
+      --shadow:    0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+      --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.05), 0 4px 6px -2px rgba(0,0,0,0.03);
+      font-size: 13px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      font-family: var(--sans); background: var(--bg); color: var(--txt);
+      min-height: 100vh;
+    }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    .material-symbols-outlined { font-size: 18px; vertical-align: middle; }
+
+    /* ── Navigation ── */
+    nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 24px; height: 60px; background: var(--card);
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 1px 3px 0 rgba(0,0,0,0.05);
+    }
+    .nav-brand { display: flex; align-items: center; gap: 12px; }
+    .nav-logo {
+      width: 32px; height: 32px; background: linear-gradient(135deg, var(--accent), #1d4ed8);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-weight: 700; font-family: var(--mono); font-size: 14px;
+      box-shadow: 0 2px 4px rgba(37,99,235,0.3);
+    }
+    .nav-title { font-family: var(--sans); font-weight: 600; font-size: 16px; letter-spacing: 0.5px; color: var(--txt); }
+    .nav-sub   { color: var(--txt3); font-size: 12px; margin-left: 8px; font-weight: 500; }
+    .nav-right { display: flex; align-items: center; gap: 12px; }
+    .nav-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 14px; border: 1px solid var(--border); border-radius: 20px;
+      background: var(--bg); color: var(--txt2); font-family: var(--mono); font-size: 11px;
+    }
+    .nav-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--txt3); }
+    .nav-dot.active { background: var(--green); box-shadow: 0 0 8px rgba(16,185,129,0.4); }
+    .nav-dot.alert  { background: var(--red); box-shadow: 0 0 8px rgba(239,68,68,0.4); }
+
+    /* ── Main Layout ── */
+    main { padding: 24px; max-width: 1920px; margin: 0 auto; }
+
+    .stats-row {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 16px; margin-bottom: 24px;
+    }
+    .stat-card {
+      background: var(--card); border: 1px solid var(--border);
+      padding: 18px; border-left: 4px solid var(--border);
+      border-radius: var(--radius-sm); box-shadow: var(--shadow);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+    .stat-card.green { border-left-color: var(--green); }
+    .stat-card.red   { border-left-color: var(--red); }
+    .stat-card.amber { border-left-color: var(--amber); }
+    .stat-card.blue  { border-left-color: var(--accent); }
+    .stat-hdr { display: flex; align-items: center; gap: 8px; color: var(--txt3); margin-bottom: 8px; font-weight: 600; font-size: 12px; letter-spacing: 0.5px; }
+    .stat-val { font-family: var(--mono); font-size: 26px; font-weight: 700; color: var(--txt); }
+
+    .dashboard-grid {
+      display: grid; grid-template-columns: 2fr 1fr; gap: 24px; align-items: start;
+    }
+    @media(max-width:1100px){ .dashboard-grid{ grid-template-columns:1fr; } }
+    .col { display: flex; flex-direction: column; gap: 24px; }
+
+    /* ── Panels ── */
+    .panel {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); box-shadow: var(--shadow); overflow: hidden;
+    }
+    .panel-hdr {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 20px; background: var(--card); border-bottom: 1px solid var(--border);
+    }
+    .panel-title { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 13px; color: var(--txt); text-transform: uppercase; letter-spacing: 0.5px; }
+    .panel-body { padding: 20px; }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px;
+      font-family: var(--sans); font-size: 12px; font-weight: 600; text-transform: uppercase;
+      cursor: pointer; border: 1px solid transparent; border-radius: 6px; transition: all 0.2s ease;
+    }
+    .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 2px 4px rgba(37,99,235,0.2); }
+    .btn-primary:hover { background: #1d4ed8; transform: translateY(-1px); box-shadow: 0 4px 6px rgba(37,99,235,0.3); }
+    .btn-danger  { background: var(--red); color: #fff; box-shadow: 0 2px 4px rgba(239,68,68,0.2); }
+    .btn-danger:hover { background: #b91c1c; transform: translateY(-1px); }
+    .btn-ghost   { border-color: var(--border); background: var(--bg); color: var(--txt2); }
+    .btn-ghost:hover { background: var(--border); color: var(--txt); }
+    .btn-sm { padding: 5px 10px; font-size: 11px; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+
+    /* ── Severity Tags ── */
+    .sev { display: inline-block; padding: 4px 10px; font-family: var(--sans); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; border-radius: 4px; border: 1px solid transparent; }
+    .sev-CLEAR    { color: #065f46; background: #d1fae5; border-color: #a7f3d0; }
+    .sev-LOW      { color: #5b21b6; background: #ede9fe; border-color: #ddd6fe; }
+    .sev-MEDIUM   { color: #92400e; background: #fef3c7; border-color: #fde68a; }
+    .sev-HIGH     { color: #991b1b; background: #fee2e2; border-color: #fecaca; }
+    .sev-CRITICAL { color: #fff; background: var(--red); box-shadow: 0 2px 4px rgba(239,68,68,0.3); }
+
+    /* ── Add Feed Form ── */
+    .add-feed-form {
+      display: flex; gap: 8px; align-items: center;
+    }
+    .add-feed-form input {
+      flex: 1; padding: 8px 14px; border: 1px solid var(--border); border-radius: 6px;
+      font-family: var(--mono); font-size: 12px; background: var(--bg); color: var(--txt);
+      outline: none; transition: border-color 0.2s;
+    }
+    .add-feed-form input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-mute); }
+    .add-feed-form input::placeholder { color: var(--txt3); }
+
+    /* ── Feed Grid ── */
+    .feeds-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+      gap: 20px;
+    }
+    @media(max-width:500px){ .feeds-grid{ grid-template-columns: 1fr; } }
+
+    .feed-card {
+      background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm);
+      box-shadow: var(--shadow); overflow: hidden; transition: box-shadow 0.2s;
+    }
+    .feed-card:hover { box-shadow: var(--shadow-lg); }
+    .feed-card.has-alert { border-color: var(--red); box-shadow: 0 0 0 2px rgba(239,68,68,0.15), var(--shadow-lg); }
+
+    .feed-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 14px; border-bottom: 1px solid var(--border); background: var(--card2);
+    }
+    .feed-id-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-family: var(--mono); font-size: 12px; font-weight: 700; color: var(--accent);
+    }
+    .feed-status-dot {
+      width: 8px; height: 8px; border-radius: 50%; background: var(--txt3);
+      flex-shrink: 0;
+    }
+    .feed-status-dot.monitoring { background: var(--green); box-shadow: 0 0 6px rgba(16,185,129,0.4); }
+    .feed-status-dot.alert { background: var(--red); box-shadow: 0 0 6px rgba(239,68,68,0.4); animation: pulse-dot 1s infinite alternate; }
+    .feed-status-dot.error { background: var(--amber); }
+    @keyframes pulse-dot { from { opacity: 0.7; } to { opacity: 1; } }
+    @keyframes pulse { from { opacity: 0.8; } to { opacity: 1; transform: scale(1.02); } }
+
+    .feed-video {
+      position: relative; background: #e2e8f0; aspect-ratio: 16/9; overflow: hidden;
+    }
+    .feed-video img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .feed-placeholder {
+      position: absolute; inset: 0; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 8px;
+      color: var(--txt3); font-family: var(--sans); font-weight: 500; font-size: 12px;
+    }
+    .feed-alert-badge {
+      position: absolute; top: 10px; right: 10px; font-family: var(--sans); font-size: 11px; font-weight: 700;
+      background: var(--red); color: #fff; padding: 5px 10px; border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(239,68,68,0.5); display: none; animation: pulse 1s infinite alternate;
+    }
+
+    .feed-footer {
+      padding: 12px 14px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+      border-top: 1px solid var(--border);
+    }
+    .feed-tag {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 8px; border: 1px solid var(--border); border-radius: 4px;
+      background: var(--bg); font-family: var(--mono); font-size: 10px; color: var(--txt2);
+    }
+    .feed-tag .val { color: var(--txt); font-weight: 600; }
+
+    /* ── Classification panel per feed ── */
+    .feed-classification {
+      padding: 10px 14px; display: flex; align-items: center; gap: 12px;
+      background: var(--card2); border-top: 1px solid var(--border);
+    }
+    .feed-class-label { font-family: var(--sans); font-weight: 700; font-size: 16px; color: var(--txt); }
+    .feed-class-conf { font-family: var(--mono); font-size: 11px; color: var(--txt3); }
+
+    /* ── Prob bars ── */
+    .prob-mini { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+    .prob-mini-row { display: flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 10px; }
+    .prob-mini-lbl { width: 60px; color: var(--txt3); }
+    .prob-mini-track { flex: 1; height: 5px; border-radius: 3px; background: var(--border); overflow: hidden; }
+    .prob-mini-fill { height: 100%; border-radius: 3px; transition: width 0.4s ease; }
+    .prob-mini-pct { width: 34px; text-align: right; color: var(--txt2); font-weight: 600; }
+
+    /* ── Empty state ── */
+    .empty-feeds {
+      text-align: center; padding: 60px 24px; color: var(--txt3);
+      font-family: var(--sans); font-weight: 500; font-size: 14px;
+      border: 2px dashed var(--border); border-radius: var(--radius-sm); background: var(--bg);
+    }
+    .empty-feeds .material-symbols-outlined { font-size: 48px; opacity: 0.4; display: block; margin-bottom: 12px; }
+
+    /* ── LSTM Readouts (sidebar) ── */
+    .lstm-val { font-family: var(--sans); font-weight: 700; font-size: 28px; color: var(--txt); margin: 8px 0 12px; }
+
+    /* ── Alerts ── */
+    .alert-list { display: flex; flex-direction: column; gap: 12px; max-height: 500px; overflow-y: auto; padding-right: 4px; }
+    .alert-item {
+      display: flex; gap: 14px; padding: 14px; background: var(--card); border: 1px solid var(--border);
+      border-left: 4px solid var(--border); border-radius: var(--radius-sm); box-shadow: var(--shadow);
+      transition: transform 0.2s ease;
+    }
+    .alert-item:hover { transform: translateX(2px); }
+    .alert-item.high  { border-left-color: var(--amber); }
+    .alert-item.critical { border-left-color: var(--red); background: #fef2f2; }
+    .alert-meta { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 11px; font-weight: 600; color: var(--txt3); margin-bottom: 4px; }
+    .alert-type { font-weight: 700; color: var(--txt); font-size: 13px; }
+    .alert-dets { font-size: 12px; color: var(--txt2); margin-top: 4px; }
+    .alert-feed-badge { font-family: var(--mono); font-size: 10px; font-weight: 700; color: var(--accent); background: var(--accent-mute); padding: 2px 6px; border-radius: 3px; }
+
+    .empty-state { text-align: center; padding: 32px; color: var(--txt3); font-family: var(--sans); font-weight: 500; font-size: 13px; border: 2px dashed var(--border); border-radius: var(--radius-sm); background: var(--bg); }
+
+    /* ── Active Siren ── */
+    #alarm-container { border-radius: var(--radius-sm); transition: all 0.3s ease; }
+
+    /* ── Lightbox ── */
+    #lightbox {
+      display:none; position:fixed; inset:0; z-index:999;
+      background: rgba(15, 23, 42, 0.9); align-items: center; justify-content: center; backdrop-filter: blur(4px);
+    }
+    #lightbox.open { display: flex; }
+    #lightbox img { max-width: 90vw; max-height: 90vh; border-radius: 8px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
+    #lightbox-close { position: absolute; top: 24px; right: 32px; background: rgba(0,0,0,0.5); border: none; border-radius: 50%; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; color: #fff; cursor: pointer; }
+
+    /* ── Upload zone ── */
+    .drop-zone {
+      border: 2px dashed var(--border); padding: 24px; text-align: center;
+      cursor: pointer; background: var(--bg); transition: all 0.2s ease; border-radius: var(--radius-sm);
+    }
+    .drop-zone:hover { border-color: var(--accent); background: var(--accent-mute); }
+    .drop-sub { font-family: var(--sans); font-size: 12px; font-weight: 500; color: var(--txt3); margin-top: 6px; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">
+    <div class="nav-logo">AI</div>
+    <div>
+      <div class="nav-title">AIVIS <span class="nav-sub">REAL TIME CRIME SURVEILLANCE</span></div>
+    </div>
+  </div>
+  <div class="nav-right">
+    <div class="nav-chip"><div class="nav-dot" id="nav-dot"></div> <span id="nav-status-txt">SYS: IDLE</span></div>
+    <div class="nav-chip"><span class="material-symbols-outlined" style="font-size:14px">router</span> FEEDS: <span id="nav-feed-count">0</span></div>
+  </div>
+</nav>
+
+<main>
+  <!-- Global Stats -->
+  <div class="stats-row">
+    <div class="stat-card green">
+      <div class="stat-hdr"><span class="material-symbols-outlined">person</span> PERSONS</div>
+      <div class="stat-val" id="s-persons">0</div>
+    </div>
+    <div class="stat-card red">
+      <div class="stat-hdr"><span class="material-symbols-outlined">crisis_alert</span> WEAPONS</div>
+      <div class="stat-val" id="s-weapons">0</div>
+    </div>
+    <div class="stat-card amber">
+      <div class="stat-hdr"><span class="material-symbols-outlined">warning</span> ALERTS</div>
+      <div class="stat-val" id="s-alerts">0</div>
+    </div>
+    <div class="stat-card blue">
+      <div class="stat-hdr"><span class="material-symbols-outlined">router</span> ACTIVE FEEDS</div>
+      <div class="stat-val" id="s-feeds">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-hdr"><span class="material-symbols-outlined">schedule</span> SYNC</div>
+      <div class="stat-val" style="font-size:18px; line-height:24px;" id="s-time">--:--</div>
+    </div>
+  </div>
+
+  <div class="dashboard-grid">
+    <!-- LEFT PANE: Feeds -->
+    <div class="col">
+      <!-- Add Feed Panel -->
+      <div class="panel">
+        <div class="panel-hdr">
+          <div class="panel-title"><span class="material-symbols-outlined">add_circle</span> ADD RTSP / IP CAMERA FEED</div>
+        </div>
+        <div class="panel-body">
+          <div class="add-feed-form" id="add-feed-form">
+            <input type="text" id="feed-url-input" placeholder="rtsp://username:password@IP:554/stream1  or  http://IP/mjpg/video.mjpg" />
+            <button class="btn btn-primary" onclick="addFeed()">
+              <span class="material-symbols-outlined">play_circle</span> Connect
+            </button>
+          </div>
+          <div style="margin-top: 10px;">
+            <div class="drop-zone" onclick="document.getElementById('file-input').click()"
+                 ondragover="event.preventDefault()" ondrop="onDrop(event)">
+              <div style="font-family:var(--mono); color:var(--txt2); font-size:12px;">OR DROP A VIDEO FILE FOR ANALYSIS</div>
+              <div class="drop-sub">MP4, AVI, MOV, MKV / MAX 500MB</div>
+              <input type="file" id="file-input" accept=".mp4,.avi,.mov,.mkv,.webm,.flv" style="display:none" onchange="onFileChosen(event)"/>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Feeds Grid -->
+      <div class="panel">
+        <div class="panel-hdr">
+          <div class="panel-title"><span class="material-symbols-outlined">grid_view</span> LIVE FEEDS</div>
+          <button class="btn btn-ghost btn-sm" onclick="removeAllFeeds()">
+            <span class="material-symbols-outlined">stop_circle</span> Stop All
+          </button>
+        </div>
+        <div class="panel-body">
+          <div class="feeds-grid" id="feeds-grid">
+            <div class="empty-feeds" id="empty-feeds">
+              <span class="material-symbols-outlined">videocam_off</span>
+              NO FEEDS CONNECTED<br/>
+              <span style="font-size:12px; margin-top:8px; display:inline-block; color:var(--txt3);">Enter an RTSP URL above and click Connect</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANE: Intelligence -->
+    <div class="col">
+      <!-- Active Siren -->
+      <div class="panel">
+        <div class="panel-hdr"><div class="panel-title"><span class="material-symbols-outlined">notifications_active</span> ACTIVE SIREN</div></div>
+        <div class="panel-body" id="alarm-container" style="text-align:center; padding:20px;">
+          <div id="alarm-icon" style="font-size:48px; color:var(--txt3); margin-bottom:8px;">
+            <span class="material-symbols-outlined" style="font-size:inherit;">volume_off</span>
+          </div>
+          <div id="alarm-text" style="font-family:var(--mono); font-size:16px; font-weight:bold; color:var(--txt3); letter-spacing:2px;">
+            SYSTEM SECURE
+          </div>
+        </div>
+      </div>
+
+      <!-- Incident Log -->
+      <div class="panel" style="flex:1;">
+        <div class="panel-hdr">
+          <div class="panel-title"><span class="material-symbols-outlined">list_alt</span> INCIDENT LOG</div>
+          <button class="btn btn-ghost btn-sm" onclick="clearAlerts()">PURGE</button>
+        </div>
+        <div class="panel-body" style="padding:12px;">
+          <div class="alert-list" id="alert-list">
+            <div class="empty-state">NO INCIDENTS RECORDED</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div id="lightbox">
+  <button id="lightbox-close" onclick="closeLightbox()"><span class="material-symbols-outlined" style="font-size:32px">close</span></button>
+  <img id="lightbox-img" src="" alt="Expansion"/>
+</div>
+
+<script>
+// ============================
+//  State
+// ============================
+const activeFeedIds = new Set();
+let globalPollTimer = null;
+let framePollTimer  = null;
+let alertPollTimer  = null;
+
+// ============================
+//  Audio Alarm
+// ============================
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+let lastAlarm = 0;
+
+function triggerSirenSound() {
+    if(audioCtx.state === 'suspended') audioCtx.resume();
+    const now = Date.now();
+    if(now - lastAlarm < 2000) return;
+    lastAlarm = now;
+    const o1 = audioCtx.createOscillator();
+    const o2 = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o1.type = 'square'; o2.type = 'square';
+    o1.frequency.setValueAtTime(800, audioCtx.currentTime);
+    o1.frequency.exponentialRampToValueAtTime(600, audioCtx.currentTime + 0.3);
+    o2.frequency.setValueAtTime(1200, audioCtx.currentTime);
+    o2.frequency.exponentialRampToValueAtTime(900, audioCtx.currentTime + 0.3);
+    g.gain.setValueAtTime(0.15, audioCtx.currentTime);
+    g.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+    o1.connect(g); o2.connect(g); g.connect(audioCtx.destination);
+    o1.start(); o2.start();
+    o1.stop(audioCtx.currentTime + 0.4); o2.stop(audioCtx.currentTime + 0.4);
+}
+
+function updateVisualSiren(active, reason) {
+    const ico = document.getElementById('alarm-icon');
+    const txt = document.getElementById('alarm-text');
+    const cnt = document.getElementById('alarm-container');
+    if(active) {
+        ico.innerHTML = '<span class="material-symbols-outlined" style="font-size:inherit;color:inherit;animation:pulse-dot 0.5s infinite alternate;">volume_up</span>';
+        ico.style.color = '#ef4444';
+        txt.style.color = '#ef4444';
+        txt.textContent = 'WARNING: ' + reason.toUpperCase();
+        cnt.style.backgroundColor = '#fee2e2';
+        cnt.style.border = '2px solid #ef4444';
+        cnt.style.borderRadius = 'var(--radius-sm)';
+        triggerSirenSound();
+    } else {
+        ico.innerHTML = '<span class="material-symbols-outlined" style="font-size:inherit;color:inherit;">volume_off</span>';
+        ico.style.color = 'var(--txt3)';
+        txt.style.color = 'var(--txt3)';
+        txt.textContent = 'SYSTEM SECURE';
+        cnt.style.backgroundColor = 'transparent';
+        cnt.style.border = 'none';
+    }
+}
+
+// ============================
+//  Feed Management
+// ============================
+async function addFeed() {
+    const input = document.getElementById('feed-url-input');
+    const url = input.value.trim();
+    if(!url) { input.focus(); return; }
+
+    input.disabled = true;
+    try {
+        const r = await fetch('/api/feeds/add', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({url: url})
+        });
+        const d = await r.json();
+        if(d.error) { alert('Error: ' + d.error); return; }
+        input.value = '';
+        registerFeed(d.feed_id, url);
+    } catch(e) {
+        alert('Connection failed');
+    } finally {
+        input.disabled = false;
+    }
+}
+
+// Enter key support
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('feed-url-input').addEventListener('keydown', e => {
+        if(e.key === 'Enter') addFeed();
+    });
+});
+
+function registerFeed(feedId, url, isVideo) {
+    activeFeedIds.add(feedId);
+    document.getElementById('empty-feeds').style.display = 'none';
+    createFeedCard(feedId, url, isVideo || false);
+    startPolling();
+    updateNavStatus();
+}
+
+function createFeedCard(feedId, url, isVideo) {
+    const grid = document.getElementById('feeds-grid');
+    const card = document.createElement('div');
+    card.className = 'feed-card';
+    card.id = 'feed-card-' + feedId;
+    const restartBtn = isVideo
+      ? `<button class="btn btn-ghost btn-sm" onclick="restartFeed('${feedId}')" id="feed-restart-${feedId}" title="Restart video">
+           <span class="material-symbols-outlined" style="font-size:14px;">replay</span>
+         </button>`
+      : '';
+    card.innerHTML = `
+      <div class="feed-header">
+        <div class="feed-id-badge">
+          <div class="feed-status-dot" id="feed-dot-${feedId}"></div>
+          ${feedId}
+          ${isVideo ? '<span style="font-size:9px; background:var(--accent-mute); color:var(--accent); padding:2px 6px; border-radius:3px; margin-left:6px;">VIDEO</span>' : ''}
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-family:var(--mono); font-size:10px; color:var(--txt3); max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${url}">${url}</span>
+          ${restartBtn}
+          <button class="btn btn-danger btn-sm" onclick="removeFeed('${feedId}')">
+            <span class="material-symbols-outlined" style="font-size:14px;">close</span>
+          </button>
+        </div>
+      </div>
+      <div class="feed-video" id="feed-video-${feedId}">
+        <div class="feed-placeholder" id="feed-ph-${feedId}">
+          <span class="material-symbols-outlined" style="font-size:28px; opacity:0.5;">videocam</span>
+          CONNECTING...
+        </div>
+        <img id="feed-img-${feedId}" style="display:none;" alt="Feed ${feedId}"/>
+        <div class="feed-alert-badge" id="feed-alert-${feedId}">THREAT DETECTED</div>
+      </div>
+      <div class="feed-classification" id="feed-class-${feedId}">
+        <div>
+          <div style="font-family:var(--mono); font-size:9px; color:var(--txt3); text-transform:uppercase; letter-spacing:0.5px;">Behavior</div>
+          <div class="feed-class-label" id="feed-lbl-${feedId}">—</div>
+        </div>
+        <span class="sev sev-CLEAR" id="feed-sev-${feedId}">—</span>
+        <div class="feed-class-conf" id="feed-conf-${feedId}">—</div>
+        <div class="prob-mini" id="feed-probs-${feedId}">
+          <div class="prob-mini-row">
+            <span class="prob-mini-lbl" style="color:#10b981;">● Normal</span>
+            <div class="prob-mini-track"><div class="prob-mini-fill" id="feed-pn-${feedId}" style="width:0%; background:linear-gradient(90deg,#10b981,#34d399);"></div></div>
+            <span class="prob-mini-pct" id="feed-pnv-${feedId}">—</span>
+          </div>
+          <div class="prob-mini-row">
+            <span class="prob-mini-lbl" style="color:#ef4444;">● Anomaly</span>
+            <div class="prob-mini-track"><div class="prob-mini-fill" id="feed-pa-${feedId}" style="width:0%; background:linear-gradient(90deg,#ef4444,#f87171);"></div></div>
+            <span class="prob-mini-pct" id="feed-pav-${feedId}">—</span>
+          </div>
+        </div>
+      </div>
+      <div class="feed-footer">
+        <div class="feed-tag">P: <span class="val" id="feed-p-${feedId}">0</span></div>
+        <div class="feed-tag">W: <span class="val" id="feed-w-${feedId}">0</span></div>
+        <div class="feed-tag">FPS: <span class="val" id="feed-fps-${feedId}">0</span></div>
+        <div class="feed-tag" id="feed-status-tag-${feedId}">STATUS: <span class="val">IDLE</span></div>
+      </div>
+    `;
+    grid.appendChild(card);
+}
+
+async function removeFeed(feedId) {
+    try {
+        await fetch('/api/feeds/' + feedId + '/remove', {method: 'POST'});
+    } catch(e) {}
+    activeFeedIds.delete(feedId);
+    const card = document.getElementById('feed-card-' + feedId);
+    if(card) card.remove();
+    if(activeFeedIds.size === 0) {
+        document.getElementById('empty-feeds').style.display = '';
+        stopPolling();
+    }
+    updateNavStatus();
+}
+
+async function restartFeed(feedId) {
+    const btn = document.getElementById('feed-restart-' + feedId);
+    if(btn) { btn.disabled = true; btn.style.opacity = '0.5'; }
+    try {
+        const r = await fetch('/api/feeds/' + feedId + '/restart', {method: 'POST'});
+        const d = await r.json();
+        if(d.error) { alert('Restart failed: ' + d.error); return; }
+        // Reset card visual state
+        const img = document.getElementById('feed-img-' + feedId);
+        const ph = document.getElementById('feed-ph-' + feedId);
+        if(img) { img.style.display = 'none'; img.src = ''; }
+        if(ph) { ph.style.display = ''; ph.innerHTML = '<span class="material-symbols-outlined" style="font-size:28px; opacity:0.5;">videocam</span>RESTARTING...'; }
+        // Reset labels
+        const el = (id) => document.getElementById(id);
+        if(el('feed-lbl-' + feedId)) el('feed-lbl-' + feedId).textContent = '—';
+        if(el('feed-sev-' + feedId)) { el('feed-sev-' + feedId).textContent = '—'; el('feed-sev-' + feedId).className = 'sev sev-CLEAR'; }
+        if(el('feed-conf-' + feedId)) el('feed-conf-' + feedId).textContent = '—';
+        if(el('feed-pn-' + feedId)) el('feed-pn-' + feedId).style.width = '0%';
+        if(el('feed-pa-' + feedId)) el('feed-pa-' + feedId).style.width = '0%';
+        if(el('feed-pnv-' + feedId)) el('feed-pnv-' + feedId).textContent = '—';
+        if(el('feed-pav-' + feedId)) el('feed-pav-' + feedId).textContent = '—';
+    } catch(e) { alert('Restart failed'); }
+    finally { if(btn) { btn.disabled = false; btn.style.opacity = '1'; } }
+}
+
+async function removeAllFeeds() {
+    try {
+        await fetch('/api/stop', {method: 'POST'});
+    } catch(e) {}
+    activeFeedIds.clear();
+    const grid = document.getElementById('feeds-grid');
+    grid.querySelectorAll('.feed-card').forEach(c => c.remove());
+    document.getElementById('empty-feeds').style.display = '';
+    stopPolling();
+    updateNavStatus();
+    updateVisualSiren(false, '');
+}
+
+// ============================
+//  Polling
+// ============================
+function startPolling() {
+    if(!globalPollTimer) globalPollTimer = setInterval(pollGlobalStats, 1000);
+    if(!framePollTimer)  framePollTimer  = setInterval(pollAllFrames, 350);
+    if(!alertPollTimer)  alertPollTimer  = setInterval(pollAlerts, 2000);
+}
+
+function stopPolling() {
+    clearInterval(globalPollTimer); globalPollTimer = null;
+    clearInterval(framePollTimer);  framePollTimer  = null;
+    clearInterval(alertPollTimer);  alertPollTimer  = null;
+}
+
+async function pollGlobalStats() {
+    try {
+        const r = await fetch('/api/global_stats');
+        const d = await r.json();
+        document.getElementById('s-persons').textContent = d.person_count || 0;
+        document.getElementById('s-weapons').textContent = d.weapon_count || 0;
+        document.getElementById('s-alerts').textContent  = d.total_alerts || 0;
+        document.getElementById('s-feeds').textContent   = d.active_feeds || 0;
+        document.getElementById('s-time').textContent    = d.last_updated || '--:--';
+        document.getElementById('nav-feed-count').textContent = d.active_feeds || 0;
+
+        const dot = document.getElementById('nav-dot');
+        if(d.status === 'alert') {
+            dot.className = 'nav-dot alert';
+            document.getElementById('nav-status-txt').textContent = 'SYS: ALERT';
+        } else if(d.status === 'monitoring') {
+            dot.className = 'nav-dot active';
+            document.getElementById('nav-status-txt').textContent = 'SYS: ONLINE';
+        } else {
+            dot.className = 'nav-dot';
+            document.getElementById('nav-status-txt').textContent = 'SYS: IDLE';
+        }
+    } catch(e) {}
+
+    // Poll per-feed stats
+    let anyAlert = false;
+    for(const feedId of activeFeedIds) {
+        try {
+            const r = await fetch('/api/feeds/' + feedId + '/stats');
+            const d = await r.json();
+            if(d.error) continue;
+
+            // Update card elements
+            const el = (id) => document.getElementById(id);
+            el('feed-p-' + feedId) && (el('feed-p-' + feedId).textContent = d.person_count || 0);
+            el('feed-w-' + feedId) && (el('feed-w-' + feedId).textContent = d.weapon_count || 0);
+            el('feed-fps-' + feedId) && (el('feed-fps-' + feedId).textContent = d.fps || 0);
+
+            // Status tag
+            const statusTag = el('feed-status-tag-' + feedId);
+            if(statusTag) statusTag.innerHTML = 'STATUS: <span class="val">' + (d.status||'IDLE').toUpperCase() + '</span>';
+
+            // Status dot
+            const dot = el('feed-dot-' + feedId);
+            if(dot) {
+                dot.className = 'feed-status-dot';
+                if(d.status === 'alert') { dot.classList.add('alert'); anyAlert = true; }
+                else if(d.status === 'monitoring') dot.classList.add('monitoring');
+                else if(d.status === 'error') dot.classList.add('error');
+            }
+
+            // Alert badge on card and card border
+            const card = el('feed-card-' + feedId);
+            const alertBadge = el('feed-alert-' + feedId);
+            if(d.status === 'alert') {
+                if(card) card.classList.add('has-alert');
+                if(alertBadge) alertBadge.style.display = 'block';
+            } else {
+                if(card) card.classList.remove('has-alert');
+                if(alertBadge) alertBadge.style.display = 'none';
+            }
+
+            // Classification
+            if(d.lstm_label && d.lstm_label !== '—') {
+                el('feed-lbl-' + feedId) && (el('feed-lbl-' + feedId).textContent = d.lstm_label);
+                el('feed-conf-' + feedId) && (el('feed-conf-' + feedId).textContent = (d.lstm_confidence*100).toFixed(1) + '%');
+                const sevEl = el('feed-sev-' + feedId);
+                if(sevEl) { sevEl.textContent = d.lstm_severity || 'CLEAR'; sevEl.className = 'sev sev-' + (d.lstm_severity||'CLEAR'); }
+
+                // Prob bars
+                if(d.probs) {
+                    const nProb = d.probs['Normal'] || 0;
+                    const aProb = d.probs['Anomaly'] || 0;
+                    el('feed-pn-' + feedId) && (el('feed-pn-' + feedId).style.width = (nProb*100).toFixed(1) + '%');
+                    el('feed-pa-' + feedId) && (el('feed-pa-' + feedId).style.width = (aProb*100).toFixed(1) + '%');
+                    el('feed-pnv-' + feedId) && (el('feed-pnv-' + feedId).textContent = (nProb*100).toFixed(1) + '%');
+                    el('feed-pav-' + feedId) && (el('feed-pav-' + feedId).textContent = (aProb*100).toFixed(1) + '%');
+                }
+            }
+
+            // Show placeholder if connecting
+            const ph = el('feed-ph-' + feedId);
+            if(ph && d.status !== 'idle' && d.status !== 'error') {
+                ph.style.display = 'none';
+                el('feed-img-' + feedId) && (el('feed-img-' + feedId).style.display = 'block');
+            }
+
+        } catch(e) {}
+    }
+
+    // Siren logic
+    if(anyAlert) {
+        updateVisualSiren(true, 'THREAT DETECTED');
+    } else if(activeFeedIds.size > 0) {
+        updateVisualSiren(false, '');
+    }
+}
+
+async function pollAllFrames() {
+    for(const feedId of activeFeedIds) {
+        try {
+            const r = await fetch('/api/feeds/' + feedId + '/frame');
+            const d = await r.json();
+            if(d.frame) {
+                const img = document.getElementById('feed-img-' + feedId);
+                if(img) {
+                    img.src = 'data:image/jpeg;base64,' + d.frame;
+                    img.style.display = 'block';
+                }
+                const ph = document.getElementById('feed-ph-' + feedId);
+                if(ph) ph.style.display = 'none';
+            }
+        } catch(e) {}
+    }
+}
+
+async function pollAlerts() {
+    try {
+        const r = await fetch('/api/alerts');
+        const al = await r.json();
+        const el = document.getElementById('alert-list');
+        if(!al.length) { el.innerHTML = '<div class="empty-state">NO INCIDENTS RECORDED</div>'; return; }
+
+        el.innerHTML = al.map(a => {
+            const sev = (a.severity || a.behavior_severity || 'HIGH').toLowerCase();
+            const cls = sev === 'critical' ? 'critical' : (sev === 'high' ? 'high' : '');
+            const icon = sev === 'critical' ? 'error' : 'warning';
+            const dets = (a.detections||[]).map(d=>d.label).join(', ');
+
+            return `<div class="alert-item ${cls}">
+              <span class="material-symbols-outlined" style="color:var(--${sev==='critical'?'red':'amber'})">${icon}</span>
+              <div style="flex:1;">
+                <div class="alert-meta">
+                  <span><span class="alert-feed-badge">${a.feed_id || '?'}</span> ID: ${a.id}</span>
+                  <span>${a.time}</span>
+                </div>
+                <div class="alert-type">${a.type||'THREAT'}</div>
+                <div class="alert-dets">W:${a.weapon_count||0} P:${a.person_count||0} ${dets ? '| '+dets : ''}</div>
+                ${a.behavior && a.behavior!=='—' ? `<div style="margin-top:6px;"><span class="sev sev-${a.behavior_severity||'HIGH'}">${a.behavior}</span></div>` : ''}
+              </div>
+            </div>`;
+        }).join('');
+    } catch(e) {}
+}
+
+async function clearAlerts() {
+    await fetch('/api/clear_alerts', {method: 'POST'});
+    document.getElementById('alert-list').innerHTML = '<div class="empty-state">NO INCIDENTS RECORDED</div>';
+}
+
+// ============================
+//  Upload
+// ============================
+function onDrop(e) { e.preventDefault(); const f = e.dataTransfer.files[0]; if(f) uploadFile(f); }
+function onFileChosen(e) { const f = e.target.files[0]; if(f) uploadFile(f); }
+
+async function uploadFile(file) {
+    const form = new FormData(); form.append('video', file);
+    try {
+        const r = await fetch('/api/upload', {method: 'POST', body: form});
+        const d = await r.json();
+        if(d.error) { alert('Error: ' + d.error); return; }
+        if(d.feed_id) registerFeed(d.feed_id, file.name, true);
+    } catch(e) { alert('Upload failed'); }
+}
+
+function updateNavStatus() {
+    document.getElementById('nav-feed-count').textContent = activeFeedIds.size;
+}
+
+function openLightbox(src) {
+    document.getElementById('lightbox-img').src = src;
+    document.getElementById('lightbox').classList.add('open');
+}
+function closeLightbox() { document.getElementById('lightbox').classList.remove('open'); }
+
+// Initial alert poll
+pollAlerts();
+</script>
+</body>
+</html>

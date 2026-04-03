@@ -1,0 +1,26 @@
+# ── ARGUS — Unified Requirements ──────────────────────────────────────────────
+# Real-Time Threat Detection for Low-Light Intelligent Surveillance
+# Muthoot Institute of Technology and Science, Kochi
+
+# Web server
+flask>=2.3.0
+
+# YOLO object detection
+ultralytics>=8.0.0
+
+# Computer vision
+opencv-python>=4.8.0
+
+# Numerical computing
+numpy>=1.24.0
+
+# Deep learning (LSTM + CNN backbone)
+torch>=2.0.0
+torchvision>=0.15.0
+
+# Image handling (PIL for ResNet pre-processing)
+Pillow>=10.0.0
+
+# ── Optional — GPU support ─────────────────────────────────────────────────────
+# If you have a CUDA-capable GPU, replace torch and torchvision above with:
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121

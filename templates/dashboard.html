@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AIVIS v3.0 // REAL TIME CRIME SURVEILLANCE</title>
+  <meta name="description" content="Professional Surveillance Analytics Terminal"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+  <!-- Professional Monoline Icons -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0" />
+  <style>
+    /* ── Premium Blue & White Theme ── */
+    :root {
+      --bg:        #f0f4f8;       
+      --bg2:       #ffffff;       
+      --card:      #ffffff;
+      --card2:     #f8fafc;
+      --border:    #e2e8f0;       
+      --accent:    #2563eb;       
+      --accent-mute: rgba(37, 99, 235, 0.1);
+      --green:     #10b981;       
+      --amber:     #f59e0b;
+      --red:       #ef4444;
+      --purple:    #8b5cf6;
+      --txt:       #0f172a;       
+      --txt2:      #475569;       
+      --txt3:      #64748b;       
+      --mono:      'JetBrains Mono', monospace;
+      --sans:      'Inter', sans-serif;
+      --radius-sm: 8px;           
+      --shadow:    0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+      --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.05), 0 4px 6px -2px rgba(0,0,0,0.03);
+      font-size: 13px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      font-family: var(--sans); background: var(--bg); color: var(--txt);
+      min-height: 100vh;
+    }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+    .material-symbols-outlined { font-size: 18px; vertical-align: middle; }
+
+    /* ── Navigation ── */
+    nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 24px; height: 60px; background: var(--card);
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 1px 3px 0 rgba(0,0,0,0.05);
+    }
+    .nav-brand { display: flex; align-items: center; gap: 12px; }
+    .nav-logo {
+      width: 32px; height: 32px; background: linear-gradient(135deg, var(--accent), #1d4ed8);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-weight: 700; font-family: var(--mono); font-size: 14px;
+      box-shadow: 0 2px 4px rgba(37,99,235,0.3);
+    }
+    .nav-title { font-family: var(--sans); font-weight: 600; font-size: 16px; letter-spacing: 0.5px; color: var(--txt); }
+    .nav-sub   { color: var(--txt3); font-size: 12px; margin-left: 8px; font-weight: 500; }
+    .nav-right { display: flex; align-items: center; gap: 16px; font-family: var(--mono); font-size: 12px; }
+    .hud-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 12px; border: 1px solid var(--border); border-radius: 20px;
+      background: var(--bg); color: var(--txt2);
+    }
+    .hud-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--txt3); }
+    .hud-dot.active { background: var(--green); box-shadow: 0 0 8px rgba(16,185,129,0.4); }
+    .hud-dot.alert  { background: var(--red); box-shadow: 0 0 8px rgba(239,68,68,0.4); }
+
+    /* ── Main Layout ── */
+    main { padding: 24px; max-width: 1800px; margin: 0 auto; }
+    .stats-row {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px; margin-bottom: 24px;
+    }
+    .stat-card {
+      background: var(--card); border: 1px solid var(--border);
+      padding: 20px; border-left: 4px solid var(--border);
+      border-radius: var(--radius-sm);
+      box-shadow: var(--shadow);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+    .stat-card.green { border-left-color: var(--green); }
+    .stat-card.red   { border-left-color: var(--red); }
+    .stat-card.amber { border-left-color: var(--amber); }
+    .stat-hdr { display: flex; align-items: center; gap: 8px; color: var(--txt3); margin-bottom: 8px; font-weight: 600; font-size: 12px; letter-spacing: 0.5px; }
+    .stat-val { font-family: var(--mono); font-size: 28px; font-weight: 700; color: var(--txt); }
+
+    .dashboard-grid {
+      display: grid; grid-template-columns: 2fr 1fr; gap: 24px; align-items: start;
+    }
+    @media(max-width:1100px){ .dashboard-grid{ grid-template-columns:1fr; } }
+    .col { display: flex; flex-direction: column; gap: 24px; }
+
+    /* ── Panels ── */
+    .panel { 
+      background: var(--card); border: 1px solid var(--border); 
+      border-radius: var(--radius-sm); box-shadow: var(--shadow); overflow: hidden;
+    }
+    .panel-hdr {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 20px; background: var(--card); border-bottom: 1px solid var(--border);
+    }
+    .panel-title { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 13px; color: var(--txt); text-transform: uppercase; letter-spacing: 0.5px; }
+    .panel-body { padding: 20px; }
+
+    /* ── Camera Console ── */
+    #camera-container {
+      position: relative; background: #cbd5e1; aspect-ratio: 16/9;
+      border: 1px solid var(--border); overflow: hidden; border-radius: var(--radius-sm);
+    }
+    #camera-feed { width: 100%; height: 100%; object-fit: cover; display: none; }
+    #cam-placeholder {
+      position: absolute; inset: 0; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 12px; color: var(--txt3); font-family: var(--sans); font-weight: 600; font-size: 14px;
+    }
+    .cam-overlay { position: absolute; inset: 0; pointer-events: none; border: 1px solid rgba(0,0,0,0.05); }
+    .crosshair {
+      position: absolute; width: 40px; height: 40px; border-color: var(--accent); border-style: solid; opacity: 0.6;
+    }
+    .crosshair.tl { top:16px; left:16px; border-width: 2px 0 0 2px; }
+    .crosshair.tr { top:16px; right:16px; border-width: 2px 2px 0 0; }
+    .crosshair.bl { bottom:16px; left:16px; border-width: 0 0 2px 2px; }
+    .crosshair.br { bottom:16px; right:16px; border-width: 0 2px 2px 0; }
+    .cam-label {
+      position: absolute; top: 16px; right: 16px; font-family: var(--sans); font-size: 11px; font-weight: 700;
+      background: var(--red); color: #fff; padding: 6px 10px; border-radius: 4px; box-shadow: 0 2px 8px rgba(239,68,68,0.5);
+      display: none; animation: pulse 1s infinite alternate;
+    }
+    @keyframes pulse { from { opacity: 0.8; } to { opacity: 1; transform: scale(1.02); } }
+    .cam-footer-info {
+      display: flex; gap: 12px; margin-top: 16px; font-family: var(--sans); font-size: 12px; color: var(--txt3); font-weight: 500;
+    }
+    .info-tag { padding: 4px 10px; border: 1px solid var(--border); background: var(--bg); border-radius: 4px; }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px;
+      font-family: var(--sans); font-size: 12px; font-weight: 600; text-transform: uppercase;
+      cursor: pointer; border: 1px solid transparent; border-radius: 6px; transition: all 0.2s ease;
+    }
+    .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 2px 4px rgba(37,99,235,0.2); }
+    .btn-primary:hover { background: #1d4ed8; transform: translateY(-1px); box-shadow: 0 4px 6px rgba(37,99,235,0.3); }
+    .btn-danger  { background: var(--red); color: #fff; box-shadow: 0 2px 4px rgba(239,68,68,0.2); }
+    .btn-danger:hover { background: #b91c1c; transform: translateY(-1px); box-shadow: 0 4px 6px rgba(239,68,68,0.3); }
+    .btn-ghost   { border-color: var(--border); background: var(--bg); color: var(--txt2); }
+    .btn-ghost:hover { background: var(--border); color: var(--txt); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+
+    /* ── Severity Tags ── */
+    .sev { display: inline-block; padding: 4px 10px; font-family: var(--sans); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; border-radius: 4px; border: 1px solid transparent; }
+    .sev-CLEAR    { color: #065f46; background: #d1fae5; border-color: #a7f3d0; }
+    .sev-LOW      { color: #5b21b6; background: #ede9fe; border-color: #ddd6fe; }
+    .sev-MEDIUM   { color: #92400e; background: #fef3c7; border-color: #fde68a; }
+    .sev-HIGH     { color: #991b1b; background: #fee2e2; border-color: #fecaca; }
+    .sev-CRITICAL { color: #fff; background: var(--red); box-shadow: 0 2px 4px rgba(239,68,68,0.3); }
+
+    /* ── Upload & Offline ── */
+    .drop-zone {
+      border: 2px dashed var(--border); padding: 32px 24px; text-align: center;
+      cursor: pointer; background: var(--bg); transition: all 0.2s ease; border-radius: var(--radius-sm);
+    }
+    .drop-zone:hover { border-color: var(--accent); background: var(--accent-mute); }
+    .drop-sub { font-family: var(--sans); font-size: 12px; font-weight: 500; color: var(--txt3); margin-top: 8px; }
+
+    /* Upload Results Container */
+    #upload-results { display: none; flex-direction: column; gap: 16px; margin-top: 20px; border-top: 1px solid var(--border); padding-top: 20px; }
+    .verdict-box {
+      display: flex; align-items: center; gap: 16px; padding: 20px; border: 1px solid transparent; border-radius: var(--radius-sm);
+    }
+    .verdict-box.green { background: #d1fae5; border-color: #a7f3d0; }
+    .verdict-box.amber { background: #fef3c7; border-color: #fde68a; }
+    .verdict-box.red   { background: #fee2e2; border-color: #fecaca; }
+    .verdict-title { font-family: var(--sans); font-size: 18px; font-weight: 700; color: var(--txt); }
+    .verdict-desc  { font-size: 13px; font-weight: 500; color: var(--txt2); margin-top: 4px; }
+    
+    .grid-frames { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+    .thumb-wrap { position: relative; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; cursor: pointer; transition: transform 0.2s; box-shadow: var(--shadow); }
+    .thumb-wrap:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+    .thumb-wrap img { width: 100%; display: block; }
+    .thumb-ts { position: absolute; bottom: 6px; right: 6px; font-family: var(--mono); font-size: 10px; background: rgba(0,0,0,0.75); padding: 4px 6px; border-radius: 4px; color: #fff; }
+
+    /* ── LSTM Readouts ── */
+    .lstm-val { font-family: var(--sans); font-weight: 700; font-size: 28px; color: var(--txt); margin: 8px 0 12px; }
+    .prob-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-family: var(--mono); font-size: 11px; }
+    .prob-lbl { width: 90px; color: var(--txt3); }
+    .prob-track { flex: 1; height: 6px; border-radius: 3px; background: var(--border); }
+    .prob-fill { height: 100%; border-radius: 3px; transition: width 0.3s ease; }
+    .prob-pct { width: 36px; text-align: right; color: var(--txt2); font-weight: 600; }
+
+    /* ── Alerts ── */
+    .alert-list { display: flex; flex-direction: column; gap: 12px; max-height: 400px; overflow-y: auto; padding-right: 4px; }
+    .alert-item {
+      display: flex; gap: 16px; padding: 16px; background: var(--card); border: 1px solid var(--border);
+      border-left: 4px solid var(--border); border-radius: var(--radius-sm); box-shadow: var(--shadow);
+      transition: transform 0.2s ease;
+    }
+    .alert-item:hover { transform: translateX(2px); }
+    .alert-item.high  { border-left-color: var(--amber); }
+    .alert-item.critical { border-left-color: var(--red); background: #fef2f2; }
+    .alert-meta { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 11px; font-weight: 600; color: var(--txt3); margin-bottom: 6px; }
+    .alert-type { font-weight: 700; color: var(--txt); font-size: 13px; }
+    .alert-dets { font-size: 12px; color: var(--txt2); margin-top: 6px; }
+
+    /* ── Utils ── */
+    .empty-state { text-align: center; padding: 32px; color: var(--txt3); font-family: var(--sans); font-weight: 500; font-size: 13px; border: 2px dashed var(--border); border-radius: var(--radius-sm); background: var(--bg); }
+    .progress-track { height: 6px; background: var(--border); border-radius: 3px; margin-top: 10px; overflow: hidden; }
+    .progress-bar { height: 100%; background: var(--accent); width: 0%; transition: width 0.4s ease; border-radius: 3px; }
+
+    /* Lightbox */
+    #lightbox {
+      display:none; position:fixed; inset:0; z-index:999;
+      background: rgba(15, 23, 42, 0.9); align-items: center; justify-content: center; backdrop-filter: blur(4px);
+    }
+    #lightbox.open { display: flex; }
+    #lightbox img { max-width: 90vw; max-height: 90vh; border-radius: 8px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
+    #lightbox-close { position: absolute; top: 24px; right: 32px; background: rgba(0,0,0,0.5); border: none; border-radius: 50%; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; color: #fff; cursor: pointer; transition: background 0.2s; }
+    #lightbox-close:hover { background: rgba(0,0,0,0.8); }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">
+    <div class="nav-logo">AI</div>
+    <div>
+      <div class="nav-title">AIVIS <span class="nav-sub">REAL TIME CRIME SURVEILLANCE</span></div>
+    </div>
+  </div>
+  <div class="nav-right">
+    <!-- Status chips removed as requested -->
+  </div>
+</nav>
+
+<main>
+  <!-- Global Stats -->
+  <div class="stats-row">
+    <div class="stat-card green">
+      <div class="stat-hdr"><span class="material-symbols-outlined">person</span> PERSONS</div>
+      <div class="stat-val" id="s-persons">0</div>
+    </div>
+    <div class="stat-card red">
+      <div class="stat-hdr"><span class="material-symbols-outlined">crisis_alert</span> WEAPONS</div>
+      <div class="stat-val" id="s-weapons">0</div>
+    </div>
+    <div class="stat-card amber">
+      <div class="stat-hdr"><span class="material-symbols-outlined">warning</span> ALERTS</div>
+      <div class="stat-val" id="s-alerts">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-hdr"><span class="material-symbols-outlined">schedule</span> SYNC</div>
+      <div class="stat-val" style="font-size:18px; line-height:24px;" id="s-time">--:--</div>
+    </div>
+  </div>
+
+  <div class="dashboard-grid">
+    <!-- LEFT PANE: Vision -->
+    <div class="col">
+      <div class="panel">
+        <div class="panel-hdr">
+          <div class="panel-title"><span class="material-symbols-outlined">videocam</span> LIVE OPTICAL FEED</div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-primary" id="btn-start" onclick="startCamera()">
+              <span class="material-symbols-outlined">play_circle</span> Initialize
+            </button>
+            <button class="btn btn-ghost" id="btn-stop" onclick="stopCamera()" disabled>
+              <span class="material-symbols-outlined">stop_circle</span> Terminate
+            </button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div id="camera-container">
+            <div id="cam-placeholder">
+              <span class="material-symbols-outlined" style="font-size:32px;opacity:0.5">videocam_off</span>
+              FEED DISCONNECTED
+            </div>
+            <img id="camera-feed" alt="Optical Feed"/>
+            <div class="cam-overlay">
+              <div class="crosshair tl"></div>
+              <div class="crosshair tr"></div>
+              <div class="crosshair bl"></div>
+              <div class="crosshair br"></div>
+              <div class="cam-label" id="cam-alert-label">THREAT DETECTED</div>
+            </div>
+          </div>
+          <div class="cam-footer-info">
+            <div class="info-tag">YOLOv8: <span id="chip-status" style="color:var(--txt)">IDLE</span></div>
+            <div class="info-tag">LSTM: <span id="chip-lstm-label" style="color:var(--txt)">--</span></div>
+            <div class="info-tag" style="color:var(--green)">DENOISER: ONLINE</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-hdr"><div class="panel-title"><span class="material-symbols-outlined">upload_file</span> OFFLINE BATCH INFERENCE</div></div>
+        <div class="panel-body">
+          <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()"
+               ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
+            <div style="font-family:var(--mono); color:var(--txt2); font-size:12px;">SELECT VIDEO FOR CHRONOLOGICAL ANALYSIS</div>
+            <div class="drop-sub">MP4, AVI, MOV, MKV / MAX 500MB</div>
+            <input type="file" id="file-input" accept=".mp4,.avi,.mov,.mkv,.webm,.flv" style="display:none" onchange="onFileChosen(event)"/>
+          </div>
+          <div id="upload-status" style="display:none; margin-top:16px;">
+            <div style="display:flex; justify-content:space-between; font-family:var(--mono); font-size:10px; color:var(--txt3);">
+              <span id="up-filename">FILENAME.MP4</span>
+              <span id="up-pct">0%</span>
+            </div>
+            <div class="progress-track"><div class="progress-bar" id="up-bar"></div></div>
+            <div id="up-msg" style="font-family:var(--mono); font-size:10px; color:var(--txt2); margin-top:6px;">INITIALIZING...</div>
+          </div>
+          
+          <!-- FOOTAGE RESULTS DIV ADDED HERE -->
+          <div id="upload-results"></div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANE: Intelligence -->
+    <div class="col">
+      <!-- LSTM Primary -->
+      <div class="panel">
+        <div class="panel-hdr"><div class="panel-title"><span class="material-symbols-outlined">psychology</span> BEHAVIOR CLASSIFICATION</div></div>
+        <div class="panel-body">
+          <div style="font-family:var(--mono); font-size:10px; color:var(--txt3);">CURRENT SCENE STATE</div>
+          <div class="lstm-val" id="beh-label">--</div>
+          <div style="margin-bottom:12px;"><span class="sev sev-CLEAR" id="beh-sev">--</span></div>
+          <div style="font-family:var(--mono); font-size:10px; color:var(--txt3);">CONFIDENCE: <span id="beh-conf">--</span></div>
+          <div id="prob-debug" style="margin-top:14px; padding-top:12px; border-top:1px solid var(--border);">
+            <div style="font-family:var(--mono); font-size:10px; color:var(--txt3); margin-bottom:8px;">CLASS PROBABILITIES</div>
+            <div style="margin-bottom:8px;">
+              <div style="display:flex; justify-content:space-between; font-family:var(--mono); font-size:11px; margin-bottom:3px;">
+                <span style="color:#22c55e;">● Normal</span><span id="prob-normal-val" style="color:var(--txt2);">--</span>
+              </div>
+              <div style="height:8px; background:var(--border); border-radius:4px; overflow:hidden;">
+                <div id="prob-normal-bar" style="height:100%; width:0%; background:linear-gradient(90deg,#22c55e,#4ade80); border-radius:4px; transition:width 0.4s ease;"></div>
+              </div>
+            </div>
+            <div>
+              <div style="display:flex; justify-content:space-between; font-family:var(--mono); font-size:11px; margin-bottom:3px;">
+                <span style="color:#ef4444;">● Anomaly</span><span id="prob-anomaly-val" style="color:var(--txt2);">--</span>
+              </div>
+              <div style="height:8px; background:var(--border); border-radius:4px; overflow:hidden;">
+                <div id="prob-anomaly-bar" style="height:100%; width:0%; background:linear-gradient(90deg,#ef4444,#f87171); border-radius:4px; transition:width 0.4s ease;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Active Siren -->
+      <div class="panel">
+        <div class="panel-hdr"><div class="panel-title"><span class="material-symbols-outlined">notifications_active</span> ACTIVE SIREN</div></div>
+        <div class="panel-body" id="alarm-container" style="text-align:center; padding:20px; transition:0.3s border, background;">
+          <div id="alarm-icon" style="font-size:48px; color:var(--txt3); margin-bottom:8px;">
+            <span class="material-symbols-outlined" style="font-size:inherit;">volume_off</span>
+          </div>
+          <div id="alarm-text" style="font-family:var(--mono); font-size:16px; font-weight:bold; color:var(--txt3); letter-spacing:2px;">
+            SYSTEM SECURE
+          </div>
+        </div>
+      </div>
+
+      <!-- Incident Log -->
+      <div class="panel" style="flex:1;">
+        <div class="panel-hdr">
+          <div class="panel-title"><span class="material-symbols-outlined">list_alt</span> INCIDENT LOG</div>
+          <button class="btn btn-ghost" onclick="clearAlerts()">PURGE</button>
+        </div>
+        <div class="panel-body" style="padding:12px;">
+          <div class="alert-list" id="alert-list">
+            <div class="empty-state">NO INCIDENTS RECORDED</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div id="lightbox">
+  <button id="lightbox-close" onclick="closeLightbox()"><span class="material-symbols-outlined" style="font-size:32px">close</span></button>
+  <img id="lightbox-img" src="" alt="Expansion"/>
+</div>
+
+<script>
+// --- State & Constants ---
+let cameraRunning = false;
+let pollInterv = null, frameInterv = null, lstmInterv = null;
+
+const SEV_COLORS = { CLEAR:'#10b981', LOW:'#8b5cf6', MEDIUM:'#f59e0b', HIGH:'#ef4444', CRITICAL:'#b91c1c' };
+const CLASS_COLORS = ['#2563eb','#10b981','#f59e0b','#ef4444','#8b5cf6','#64748b','#f97316','#d946ef','#22c55e'];
+const CLASSES = ['Normal','Assault','Explosion','Fighting','RoadAccidents','Robbery','Shooting','Shoplifting','Stealing'];
+
+// --- Audio Alarm ---
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+let lastAlarm = 0;
+
+function triggerSirenSound() {
+    if(audioCtx.state === 'suspended') audioCtx.resume();
+    const now = Date.now();
+    if(now - lastAlarm < 2000) return;
+    lastAlarm = now;
+    
+    // Create an aggressive dual-tone beep
+    const o1 = audioCtx.createOscillator();
+    const o2 = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    
+    o1.type = 'square'; o2.type = 'square';
+    o1.frequency.setValueAtTime(800, audioCtx.currentTime);
+    o1.frequency.exponentialRampToValueAtTime(600, audioCtx.currentTime + 0.3);
+    o2.frequency.setValueAtTime(1200, audioCtx.currentTime);
+    o2.frequency.exponentialRampToValueAtTime(900, audioCtx.currentTime + 0.3);
+    
+    g.gain.setValueAtTime(0.2, audioCtx.currentTime);
+    g.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+    
+    o1.connect(g); o2.connect(g); g.connect(audioCtx.destination);
+    o1.start(); o2.start();
+    o1.stop(audioCtx.currentTime + 0.4); o2.stop(audioCtx.currentTime + 0.4);
+}
+
+function updateVisualSiren(active, reason) {
+    const ico = document.getElementById('alarm-icon');
+    const txt = document.getElementById('alarm-text');
+    const cnt = document.getElementById('alarm-container');
+    
+    if(active) {
+        ico.innerHTML = '<span class="material-symbols-outlined" style="font-size:inherit;color:inherit;animation:pulse 0.5s infinite alternate;">volume_up</span>';
+        ico.style.color = '#ef4444';
+        txt.style.color = '#ef4444';
+        txt.textContent = 'WARNING: ' + reason.toUpperCase();
+        cnt.style.backgroundColor = '#fee2e2';
+        cnt.style.border = '2px solid #ef4444';
+        triggerSirenSound();
+    } else {
+        ico.innerHTML = '<span class="material-symbols-outlined" style="font-size:inherit;color:inherit;">volume_off</span>';
+        ico.style.color = 'var(--txt3)';
+        txt.style.color = 'var(--txt3)';
+        txt.textContent = 'SYSTEM SECURE';
+        cnt.style.backgroundColor = 'transparent';
+        cnt.style.border = 'none';
+    }
+}
+
+// --- Camera ---
+async function startCamera() {
+  document.getElementById('btn-start').disabled = true;
+  document.getElementById('btn-stop').disabled = false;
+  await fetch('/api/start', { method: 'POST' });
+  cameraRunning = true;
+  pollInterv  = setInterval(pollStats, 1000);
+  frameInterv = setInterval(pollFrame, 300);
+  lstmInterv  = setInterval(pollLSTM, 1500);
+  document.getElementById('cam-placeholder').style.display = 'none';
+  document.getElementById('camera-feed').style.display = 'block';
+  document.getElementById('nav-dot').className = 'hud-dot active';
+  document.getElementById('nav-status-txt').textContent = 'SYS: ONLINE';
+}
+
+function stopCamera() {
+  cameraRunning = false;
+  clearInterval(pollInterv); clearInterval(frameInterv); clearInterval(lstmInterv);
+  document.getElementById('btn-start').disabled = false;
+  document.getElementById('btn-stop').disabled = true;
+  document.getElementById('cam-placeholder').style.display = 'flex';
+  document.getElementById('camera-feed').style.display = 'none';
+  document.getElementById('nav-dot').className = 'hud-dot';
+  document.getElementById('nav-status-txt').textContent = 'SYS: IDLE';
+  document.getElementById('chip-status').textContent = 'IDLE';
+  document.getElementById('cam-alert-label').style.display = 'none';
+}
+
+// --- Poll Data ---
+async function pollStats() {
+  try {
+    const r = await fetch('/api/stats');
+    const d = await r.json();
+    document.getElementById('s-persons').textContent = d.person_count || 0;
+    document.getElementById('s-weapons').textContent = d.weapon_count || 0;
+    document.getElementById('s-alerts').textContent  = d.total_alerts || 0;
+    document.getElementById('s-time').textContent    = d.last_updated || '--:--';
+
+    const st = d.status || 'idle';
+    document.getElementById('chip-status').textContent = st.toUpperCase();
+    const camLbl = document.getElementById('cam-alert-label');
+
+    if (st === 'alert') {
+      camLbl.style.display = 'block';
+    } else if (st === 'monitoring') {
+      camLbl.style.display = 'none';
+    }
+  } catch(e) {}
+}
+
+async function pollFrame() {
+  try {
+    const r = await fetch('/api/frame');
+    const d = await r.json();
+    if(d.frame) document.getElementById('camera-feed').src = 'data:image/jpeg;base64,' + d.frame;
+  } catch(e) {}
+}
+
+async function pollLSTM() {
+  try {
+    const r = await fetch('/api/lstm_stats');
+    const d = await r.json();
+    // nav-lstm-status removed completely
+    
+    if(!d.loaded) return;
+    
+    if(d.label && d.label !== '—') {
+      document.getElementById('beh-label').textContent = d.label;
+      document.getElementById('chip-lstm-label').textContent = d.label;
+      document.getElementById('beh-conf').textContent = (d.confidence*100).toFixed(1) + '%';
+      
+      const sev = d.severity || 'CLEAR';
+      const sevEl = document.getElementById('beh-sev');
+      sevEl.textContent = sev; sevEl.className = 'sev sev-'+sev;
+      
+      // Update probability debug bars
+      if(d.probs) {
+        const nProb = d.probs['Normal'] || 0;
+        const aProb = d.probs['Anomaly'] || 0;
+        document.getElementById('prob-normal-val').textContent = (nProb*100).toFixed(1) + '%';
+        document.getElementById('prob-anomaly-val').textContent = (aProb*100).toFixed(1) + '%';
+        document.getElementById('prob-normal-bar').style.width = (nProb*100).toFixed(1) + '%';
+        document.getElementById('prob-anomaly-bar').style.width = (aProb*100).toFixed(1) + '%';
+      }
+      
+      // Trigger siren if anomaly or weapon is actively detected
+      const hasWeapons = parseInt(document.getElementById('s-weapons').textContent) > 0;
+      if (sev === 'CRITICAL' || sev === 'HIGH' || d.label === 'Anomaly') {
+          updateVisualSiren(true, d.label);
+      } else if (hasWeapons) {
+          updateVisualSiren(true, 'WEAPON');
+      } else {
+          updateVisualSiren(false, '');
+      }
+    }
+  } catch(e) {}
+}
+
+setInterval(pollAlerts, 2000);
+async function pollAlerts() {
+  try {
+    const r = await fetch('/api/alerts');
+    const al = await r.json();
+    const el = document.getElementById('alert-list');
+    if(!al.length) { el.innerHTML = '<div class="empty-state">NO INCIDENTS RECORDED</div>'; return; }
+    
+    el.innerHTML = al.map(a => {
+      const sev = (a.severity || a.behavior_severity || 'HIGH').toLowerCase();
+      const cls = sev === 'critical' ? 'critical' : (sev === 'high' ? 'high' : '');
+      const icon = sev === 'critical' ? 'error' : 'warning';
+      const dets = (a.detections||[]).map(d=>d.label).join(', ');
+      
+      return `<div class="alert-item ${cls}">
+        <span class="material-symbols-outlined" style="color:var(--${sev==='critical'?'red':'amber'})">${icon}</span>
+        <div style="flex:1;">
+          <div class="alert-meta"><span>ID: ${a.id}</span><span>${a.time}</span></div>
+          <div class="alert-type">${a.type||'THREAT'}</div>
+          <div class="alert-dets">W:${a.weapon_count||0} P:${a.person_count||0} | ${dets}</div>
+          ${a.behavior && a.behavior!=='—' ? `<div style="margin-top:6px;"><span class="sev sev-${a.behavior_severity||'HIGH'}">${a.behavior}</span></div>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) {}
+}
+
+async function clearAlerts() {
+  await fetch('/api/clear_alerts', { method: 'POST' });
+  document.getElementById('alert-list').innerHTML = '<div class="empty-state">NO INCIDENTS RECORDED</div>';
+}
+
+// --- Upload Logic ---
+function onDragOver(e) { e.preventDefault(); }
+function onDragLeave(e) {}
+function onDrop(e) { e.preventDefault(); const f = e.dataTransfer.files[0]; if(f) uploadFile(f); }
+function onFileChosen(e) { const f = e.target.files[0]; if(f) uploadFile(f); }
+
+async function uploadFile(file) {
+  document.getElementById('upload-status').style.display = 'block';
+  document.getElementById('upload-results').style.display = 'none';
+  document.getElementById('up-filename').textContent = file.name.toUpperCase();
+  document.getElementById('up-pct').textContent = '0%';
+  document.getElementById('up-bar').style.width = '0%';
+  document.getElementById('up-msg').textContent = 'TRANSFERRING BUFFER...';
+
+  const form = new FormData(); form.append('video', file);
+  try {
+    const r = await fetch('/api/upload', { method: 'POST', body: form });
+    const d = await r.json();
+    if (d.error) { document.getElementById('up-msg').textContent = 'ERR: ' + d.error; return; }
+
+    if (d.status === 'playing_in_live_feed') {
+       document.getElementById('up-msg').textContent = 'FOOTAGE HIJACKING LIVE FEED...';
+       setTimeout(() => {
+           document.getElementById('upload-status').style.display = 'none';
+           if (!cameraRunning) {
+               startCamera();
+           }
+       }, 1500);
+       return;
+    }
+
+    pollJob(d.job_id, file.name.toUpperCase());
+    document.getElementById('up-msg').textContent = 'RUNNING INFERENCE ALGORITHMS...';
+  } catch(e) { document.getElementById('up-msg').textContent = 'UPLOAD FAILED'; }
+}
+
+function pollJob(jobId, fname) {
+  const timer = setInterval(async () => {
+    try {
+      const r = await fetch('/api/job/' + jobId);
+      const j = await r.json();
+      const p = j.progress || 0;
+      document.getElementById('up-pct').textContent = p + '%';
+      document.getElementById('up-bar').style.width = p + '%';
+      
+      if (j.status === 'done') {
+        clearInterval(timer);
+        document.getElementById('up-msg').textContent = 'INFERENCE COMPLETE.';
+        renderUploadResults(j.result, fname);
+      } else if (j.status === 'error') {
+        clearInterval(timer); document.getElementById('up-msg').textContent = 'ERR: ' + (j.error||'UNKNOWN');
+      }
+    } catch(e) {}
+  }, 1000);
+}
+
+function renderUploadResults(res, fname) {
+  const el = document.getElementById('upload-results');
+  el.style.display = 'flex';
+  
+  const v = res.verdict || {};
+  const c = (v.color === 'red' ? 'red' : (v.color === 'amber' ? 'amber' : 'green'));
+  const ic = c==='red'?'error':(c==='amber'?'warning':'check_circle');
+  
+  // HTML builder
+  let html = `
+    <div class="verdict-box ${c}">
+      <span class="material-symbols-outlined" style="font-size:32px; color:var(--${c})">${ic}</span>
+      <div>
+        <div class="verdict-title" style="color:var(--${c})">${(v.level||'OK').toUpperCase()}</div>
+        <div class="verdict-desc">${v.label||'No obvious threats.'}</div>
+        ${v.lstm_label ? `<div style="margin-top:6px;"><span class="sev sev-${v.lstm_severity||'CLEAR'}">${v.lstm_label}</span></div>` : ''}
+      </div>
+    </div>
+    
+    <div style="display:flex; gap:12px; margin-top:8px;">
+      <div style="flex:1; background:var(--bg2); border:1px solid var(--border); padding:8px; text-align:center;">
+        <div style="font-family:var(--mono);font-size:10px;color:var(--txt3);">MAX CONCURRENT WEAPONS</div>
+        <div style="font-family:var(--mono);font-size:18px;color:var(--txt);">${res.weapon_detections||0}</div>
+      </div>
+      <div style="flex:1; background:var(--bg2); border:1px solid var(--border); padding:8px; text-align:center;">
+        <div style="font-family:var(--mono);font-size:10px;color:var(--txt3);">MAX CONCURRENT PERSONS</div>
+        <div style="font-family:var(--mono);font-size:18px;color:var(--txt);">${res.person_detections||0}</div>
+      </div>
+    </div>
+  `;
+  
+  if (res.key_frames && res.key_frames.length > 0) {
+    html += `<div style="font-family:var(--mono); font-size:12px; margin-top:12px;">KEY THREAT FRAMES (TOP 4)</div>
+    <div class="grid-frames">
+      ${res.key_frames.slice(0, 4).map((b64,i) => {
+        const ts = res.threat_frames[i] ? res.threat_frames[i].timestamp_fmt : '';
+        return `<div class="thumb-wrap" onclick="openLightbox('data:image/jpeg;base64,${b64}')">
+          <img src="data:image/jpeg;base64,${b64}"/>
+          <div class="thumb-ts">${ts}</div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }
+  
+  el.innerHTML = html;
+
+  // ===== POPULATE RIGHT PANE =====
+  
+  // 1. Behavior Classification
+  const lsum = res.lstm_summary || {};
+  document.getElementById('beh-label').textContent = lsum.label || '--';
+  document.getElementById('beh-conf').textContent  = ((lsum.conf||0)*100).toFixed(1) + '%';
+  const sevEl = document.getElementById('beh-sev');
+  sevEl.textContent = lsum.severity || 'CLEAR';
+  sevEl.className = 'sev sev-' + (lsum.severity || 'CLEAR');
+  document.getElementById('chip-lstm-label').textContent = lsum.label || '--';
+
+  // 2. Active Siren
+  if (res.threat_found) {
+    updateVisualSiren(true, res.threat_type || 'ANOMALY DETECTED IN BATCH');
+  } else {
+    updateVisualSiren(false, '');
+  }
+
+  // 3. Incident Log
+  const logEl = document.getElementById('alert-list');
+  const threatType = res.threat_found ? "ANOMALY DETECTED IN FOOTAGE" : "NO ANOMALIES FOUND";
+  const logHtml = `
+    <div class="alert-item ${c==='red'?'critical':(c==='amber'?'high':'')}">
+      <span class="material-symbols-outlined" style="color:var(--${c})">${ic}</span>
+      <div style="flex:1;">
+        <div class="alert-meta"><span>FOOTAGE ANALYSIS COMPLETE</span></div>
+        <div class="alert-type">${threatType}</div>
+        <div class="alert-dets">PEAK WEAPONS: ${res.weapon_detections||0} | PEAK PERSONS: ${res.person_detections||0}</div>
+        ${v.lstm_label ? `<div style="margin-top:6px;"><span class="sev sev-${v.lstm_severity||'CLEAR'}">${v.lstm_label}</span></div>` : ''}
+      </div>
+    </div>
+  `;
+  if (logEl.innerHTML.includes('NO INCIDENTS RECORDED')) {
+    logEl.innerHTML = logHtml;
+  } else {
+    logEl.insertAdjacentHTML('afterbegin', logHtml);
+  }
+}
+
+function openLightbox(src) {
+  document.getElementById('lightbox-img').src = src;
+  document.getElementById('lightbox').classList.add('open');
+}
+function closeLightbox() { document.getElementById('lightbox').classList.remove('open'); }
+
+pollAlerts(); pollLSTM();
+</script>
+</body>
+</html>
